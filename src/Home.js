@@ -7,9 +7,9 @@ import Header from './components/header';
 
 const Home = () => {
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <div>
             <Header />
-            {/* <Footer /> */}
+            
         </div>
     );
 }
