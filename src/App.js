@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 // import Login from "./components/Login";
 import Home from "./Home";
-// import Contactus from "./contactus";
+import Contact from "./contact";
 // import Chatbot from "./chatbot";
 // import Party from "./parties";
 // import Dataanalysis from "./dataanalysis";
@@ -13,11 +13,11 @@ function App() {
     <Router>
       <div>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
           {/* <Route path="/home" element={<Home />} /> */}
-          {/* <Route path="/parties" element={<Party />} />
-          <Route path="/contact" element={<Contactus />} />
-          <Route path="/chatbot" element={<Chatbot />} />
+          {/* <Route path="/parties" element={<Party />} /> */}
+          <Route path="/contact" element={<Contact />} />
+          {/* <Route path="/chatbot" element={<Chatbot />} />
           <Route path="/dataanalysis" element={<Dataanalysis />} />
           <Route path="/prediction" element={<Prediction />} /> */}
         </Routes>
