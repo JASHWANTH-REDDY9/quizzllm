@@ -2,7 +2,7 @@ import React from 'react';
 import Header from './components/header';
 import Footer from './components/footer';
 
-const Home = () => {
+const History = () => {
     return (
         <div style={{display:'flex', flexDirection:'column', minHeight:'100vh'}}>
             <Header />
@@ -14,4 +14,4 @@ const Home = () => {
     );
 }
 
-export default Home;
+export default History;

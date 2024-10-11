@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 // import Login from "./components/Login";
 import Home from "./Home";
 import Contact from "./contact";
+import History from "./history";
 // import Chatbot from "./chatbot";
 // import Party from "./parties";
 // import Dataanalysis from "./dataanalysis";
@@ -14,8 +15,7 @@ function App() {
       <div>
         <Routes>
           <Route path="/home" element={<Home />} />
-          {/* <Route path="/home" element={<Home />} /> */}
-          {/* <Route path="/parties" element={<Party />} /> */}
+          <Route path="/history" element={<History />} />
           <Route path="/contact" element={<Contact />} />
           {/* <Route path="/chatbot" element={<Chatbot />} />
           <Route path="/dataanalysis" element={<Dataanalysis />} />
