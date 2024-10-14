@@ -4,12 +4,12 @@ import Footer from './components/footer';
 
 const Contact = () => {
   return (
-    <div style={{display:'flex', flexDirection:'column', minHeight:'100vh'}}>
+    <div style={{display:'flex', flexDirection:'column', minHeight:'100vh', }}>
     <Header />
-    <section id="" style={{ marginTop: '80px', flex:1 }}> {/* Adjusted padding */}
+    <section id="" style={{ marginTop: '80px', flex:1 ,fontSize:15,padding:0,paddingTop:'50px'}}> {/* Adjusted padding */}
         <div className="container">
-            <h2 className="text-uppercase text-center text-secondary mb-0">Contact Me</h2>
-            <hr className="star-dark mb-5"/>
+            <h3 className="text-uppercase text-center text-secondary mb-0">Contact Me</h3>
+            <hr className="star-dark mb-2" />
             <div className="row">
                 <div className="col-lg-8 mx-auto">
                     <form id="contactForm" name="sentMessage">
