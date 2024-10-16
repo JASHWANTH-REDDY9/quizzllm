@@ -2,7 +2,7 @@ import React from 'react';
 import Header from './components/header';
 import Footer from './components/footer';
 
-const Home = () => {
+const Quiz = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Header />
@@ -30,12 +30,12 @@ const Home = () => {
                         <option value="option4">4</option>
                         <option value="option5">5</option>
                     </select>
-                    <select style={styles.dropdown}>
+                    {/* <select style={styles.dropdown}>
                         <option value="">Difficulty</option>
                         <option value="option1">Easy</option>
                         <option value="option2">Medium</option>
                         <option value="option3">Hard</option>
-                    </select>
+                    </select> */}
                     <button style={styles.submitButton}>Submit</button>
                 </div>
                 <hr style={styles.blackLine} />
@@ -100,4 +100,4 @@ const styles = {
     },
 };
 
-export default Home;
+export default Quiz;
