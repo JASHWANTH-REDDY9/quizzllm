@@ -15,7 +15,7 @@ function App() {
     <Router>
       <div>
         <Routes>
-          <Route path="/quiz" element={<Quiz />} />
+          <Route path="/" element={<Quiz />} />
           <Route path="/cquiz" element={<Cquiz />} />
           <Route path="/history" element={<History />} />
           <Route path="/contact" element={<Contact />} />

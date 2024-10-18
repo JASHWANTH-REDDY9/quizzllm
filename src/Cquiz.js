@@ -9,6 +9,7 @@ const Cquiz = () => {
             <section style={{ flex: 1, padding: '0', paddingTop: '6%' }}>
                 <div style={styles.formContainer}>
                     <textarea className="form-control" id="message" required placeholder="Enter Data" style={{ height: '100px' }}></textarea>
+                    <input type="file" id="file-upload" style={styles.fileInput} accept="application/pdf" />
                     <button style={styles.submitButton}>Submit</button>
                 </div>
                 <hr style={styles.blackLine} />
@@ -32,13 +33,14 @@ const styles = {
         marginTop: '20px',
         flexWrap: 'wrap',
     },
-    dropdown: {
+    fileInput: {
         marginRight: '10px',
-        marginBottom: '10px',
-        padding: '5px',
+        // marginBottom: '10px',
+        marginTop: '10px',
+        padding: '8px',
         borderRadius: '4px',
         border: '1px solid #ccc',
-        flex: '1 1 400px',
+        flex: '1 1 150px',
     },
     submitButton: {
         padding: '8px',
@@ -63,7 +65,7 @@ const styles = {
             maxWidth: '90%',
             marginTop: '20px',
         },
-        dropdown: {
+        fileInput: {
             flex: '1 1 100%',
             marginBottom: '15px',
         },
