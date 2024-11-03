@@ -16,6 +16,19 @@ const Quiz = () => {
                         <option value="option4">JavaScript</option>
                     </select>
                     <select style={styles.dropdown}>
+                        <option value="">Topic</option>
+                        <option value="option1">Data Types</option>
+                        <option value="option2">Operators</option>
+                        <option value="option3">Conditional Statement</option>
+                        <option value="option2">Loops</option>
+                        <option value="option2">Functions</option>
+                        <option value="option2">OOPs Concepts</option>
+                        <option value="option2">Exception Handling</option>
+                        <option value="option2">Packages or Libraries</option>
+                        <option value="option2">Collections</option>
+                        <option value="option2">Database Handling</option>
+                    </select>
+                    <select style={styles.dropdown}>
                         <option value="">Type of Question</option>
                         <option value="option1">MCQ's</option>
                         <option value="option2">Booleans</option>
@@ -30,12 +43,6 @@ const Quiz = () => {
                         <option value="option4">4</option>
                         <option value="option5">5</option>
                     </select>
-                    {/* <select style={styles.dropdown}>
-                        <option value="">Difficulty</option>
-                        <option value="option1">Easy</option>
-                        <option value="option2">Medium</option>
-                        <option value="option3">Hard</option>
-                    </select> */}
                     <button style={styles.submitButton}>Submit</button>
                 </div>
                 <hr style={styles.blackLine} />
