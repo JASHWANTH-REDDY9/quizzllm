@@ -1,11 +1,25 @@
+
 from nltk.tokenize import sent_tokenize
 from huggingface_hub import login,hf_hub_download
+
 import streamlit as st
+
 import requests
 from bs4 import BeautifulSoup
+
+# Login using your Hugging Face token
+#login("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")
+
+
+# Download NLTK data (run this once)
+#nltk.download('punkt')
+
+import torch
 from pathlib import Path
 from torch.utils.data import Dataset, DataLoader
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
+from sklearn.model_selection import train_test_split
 from transformers import (
     AdamW,
     T5ForConditionalGeneration,
@@ -150,47 +164,83 @@ def get_geeksforgeeks_content(url):
     except Exception as e:
         return f"Error occurred: {e}"
     
+
+
+# if __name__ == "__main__":
+#     # Provide options to the user with keywords only
+#     urls = {
+#         1: ("ER Model", "https://www.geeksforgeeks.org/introduction-of-er-model/"),
+#         2: ("Database Normalization", "https://www.geeksforgeeks.org/introduction-of-database-normalization/"),
+#         3: ("Concurrency Control", "https://www.geeksforgeeks.org/concurrency-control-in-dbms/"),
+#         4: ("History of DBMS", "https://www.geeksforgeeks.org/history-of-dbms/"),
+#         5: ("Relational Model", "https://www.geeksforgeeks.org/introduction-of-relational-model-and-codd-rules-in-dbms/"),
+#     }
+
+#     print("Select a topic to scrape and generate questions from:")
+#     for key, (keyword, _) in urls.items():
+#         print(f"{key}: {keyword}")
+
+#     # Get user input for topic selection
+#     selected_key = int(input("Enter the number corresponding to your choice: "))
+#     if selected_key not in urls:
+#         print("Invalid selection. Please restart the script.")
+#         exit()
+
+#     _, selected_url = urls[selected_key]
+
+#     # Scrape content from the selected URL
+#     print("\nFetching and processing content from the selected topic...")
+#     context = get_geeksforgeeks_content(selected_url)
+#     if "Failed to retrieve content" in context or "Error occurred" in context:
+#         print(context)
+#         exit()
+
+#     # Chunk the scraped content
+#     chunks = split_into_chunks(context, max_sentences_per_chunk=3)
+#     num_chunks = len(chunks)
+#     print(f"\nContent split into {num_chunks} chunks.")
+
+#     # Prompt user to select the number of questions to generate
+#     print(f"\nEnter the number of questions to generate (min: 1, max: {num_chunks}):")
+#     num_questions = int(input("Number of questions: "))
+#     if not (1 <= num_questions <= num_chunks):
+#         print("Invalid number of questions. Please restart the script.")
+#         exit()
+
+#     # Initialize the Question Generator
+#     qg = QuestionGenerator()
+
+#     # Question generation logic
+#     question_types = ["fill_in_the_blanks", "mcq", "True_or_false", "short_qa"]
+#     all_generated_questions = {q_type: [] for q_type in question_types}
+
+#     print(f"\nGenerating {num_questions} questions...")
+#     for i, chunk in enumerate(chunks[:num_questions]):  # Limit to the selected number of chunks
+#         for q_type in question_types:
+#             question = qg.generate(q_type, chunk)
+#             all_generated_questions[q_type].append((chunk, question))  # Pair with the context for reference
+
+#     # Display the generated questions
+#     for q_type in question_types:
+#         print(f"\nGenerated {q_type.replace('_', ' ').capitalize()} Questions:")
+#         for idx, (chunk, question) in enumerate(all_generated_questions[q_type], 1):
+#             print(f"Context {idx}: {chunk}")
+#             print(question, "\n")
+
+
+
 # Main function for Streamlit app
 def main():
     st.title("AI Question Generator")
 
     # Define URLs with keywords
-    # urls = {
-    #     1: ("ER Model", "https://www.geeksforgeeks.org/introduction-of-er-model/"),
-    #     2: ("Database Normalization", "https://www.geeksforgeeks.org/introduction-of-database-normalization/"),
-    #     3: ("Concurrency Control", "https://www.geeksforgeeks.org/concurrency-control-in-dbms/"),
-    #     4: ("History of DBMS", "https://www.geeksforgeeks.org/history-of-dbms/"),
-    #     5: ("Relational Model", "https://www.geeksforgeeks.org/introduction-of-relational-model-and-codd-rules-in-dbms/"),
-    # }
     urls = {
-    # Topics for OS
-    "OS": {
-        "OS Basics": "https://www.geeksforgeeks.org/what-is-an-operating-system/?ref=lbp",
-        "Structure of Operating Systems": "https://www.geeksforgeeks.org/operating-system-services/?ref=lbp",
-        "Types of OS": "https://www.geeksforgeeks.org/batch-processing-operating-system/?ref=lbp",
-        "Process Management": "https://www.geeksforgeeks.org/introduction-of-process-management/?ref=lbp",
-        "CPU Scheduling in OS": "https://www.geeksforgeeks.org/cpu-scheduling-in-operating-systems/?ref=lbp",
-        "Threads in OS": "https://www.geeksforgeeks.org/thread-in-operating-system/?ref=lbp",
-        "Process Synchronization": "https://www.geeksforgeeks.org/introduction-of-process-synchronization/?ref=lbp",
-        "Critical Section Problem Execution": "https://www.geeksforgeeks.org/petersons-algorithm-in-process-synchronization/?ref=lbp",
-        "Deadlocks & Deadlock Handling Methods": "https://www.geeksforgeeks.org/introduction-of-deadlock-in-operating-system/?ref=lbp",
-        "Memory Management": "https://www.geeksforgeeks.org/memory-management-in-operating-system/?ref=lbp",
-        "Page Replacement Algorithms": "https://www.geeksforgeeks.org/page-replacement-algorithms-in-operating-systems/?ref=lbp",
-        "Storage Management": "https://www.geeksforgeeks.org/storage-management/?ref=lbp"
-    },
-    # Topics for DBMS
-    "DBMS": {
-        "Basics of DBMS": "https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/?ref=lbp",
-        "Entity Relationship Model": "https://www.geeksforgeeks.org/introduction-of-er-model/?ref=lbp",
-        "Relational Model": "https://www.geeksforgeeks.org/introduction-of-relational-model-and-codd-rules-in-dbms/?ref=lbp",
-        "Relational Algebra": "https://www.geeksforgeeks.org/introduction-of-relational-algebra-in-dbms/?ref=lbp",
-        "Functional Dependencies": "https://www.geeksforgeeks.org/functional-dependency-and-attribute-closure/?ref=lbp",
-        "Normalisation": "https://www.geeksforgeeks.org/introduction-of-database-normalization/?ref=lbp",
-        "Transactions and Concurrency Control": "https://www.geeksforgeeks.org/concurrency-control-in-dbms/?ref=lbp",
-        "Indexing, B and B+ Trees": "https://www.geeksforgeeks.org/indexing-in-databases-set-1/?ref=lbp",
-        "File Organisation": "https://www.geeksforgeeks.org/file-organization-in-dbms-set-1/?ref=lbp"
+        1: ("ER Model", "https://www.geeksforgeeks.org/introduction-of-er-model/"),
+        2: ("Database Normalization", "https://www.geeksforgeeks.org/introduction-of-database-normalization/"),
+        3: ("Concurrency Control", "https://www.geeksforgeeks.org/concurrency-control-in-dbms/"),
+        4: ("History of DBMS", "https://www.geeksforgeeks.org/history-of-dbms/"),
+        5: ("Relational Model", "https://www.geeksforgeeks.org/introduction-of-relational-model-and-codd-rules-in-dbms/"),
     }
-}
 
     # Step 1: Select a topic
     st.header("Step 1: Choose a topic")

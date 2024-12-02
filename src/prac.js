@@ -9,6 +9,10 @@ const Quiz = () => {
     const [numQuestions, setNumQuestions] = useState('');
     const [questions, setQuestions] = useState([]);
     const [error, setError] = useState('');
+    const [text, setText] = useState('');
+    const [file, setFile] = useState(null);
+    const [result, setResult] = useState(null);
+
 
     const topicMapping = {
         OS: ["OS Basics", "Types of OS", "Process Management", "CPU Scheduling", "Threads", "Process Synchronization", "Critical Section Problem", "Deadlocks", "Memory Management", "Page Replacement", "Storage Management"],
@@ -18,7 +22,10 @@ const Quiz = () => {
     };
 
     const handleSubmit = async () => {
+        // Reset the error state
         setError('');
+      
+        // Validate the form fields before submission
         if (!topic || !subTopic || !questionType || !numQuestions) {
             setError('Please select all fields');
             return; // Prevent submitting the form if any field is missing
