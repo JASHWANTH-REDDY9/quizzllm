@@ -55,7 +55,6 @@ class QGModel(pl.LightningModule):
     def configure_optimizers(self):
         return AdamW(self.parameters(), lr=LEARNING_RATE)
 
-
 class QuestionGenerator():
     def __init__(self):
         self.tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
@@ -137,32 +136,31 @@ def generate_questions(topic, subTopic, questionType, numQuestions):
         # Topics for OS
         "OS": {
             "OS Basics": "https://www.geeksforgeeks.org/what-is-an-operating-system/?ref=lbp",
-            "Structure of Operating Systems": "https://www.geeksforgeeks.org/operating-system-services/?ref=lbp",
+            "Structure of OS": "https://www.geeksforgeeks.org/operating-system-services/?ref=lbp",
             "Types of OS": "https://www.geeksforgeeks.org/batch-processing-operating-system/?ref=lbp",
             "Process Management": "https://www.geeksforgeeks.org/introduction-of-process-management/?ref=lbp",
-            "CPU Scheduling in OS": "https://www.geeksforgeeks.org/cpu-scheduling-in-operating-systems/?ref=lbp",
-            "Threads in OS": "https://www.geeksforgeeks.org/thread-in-operating-system/?ref=lbp",
+            "CPU Scheduling": "https://www.geeksforgeeks.org/cpu-scheduling-in-operating-systems/?ref=lbp",
+            "Threads": "https://www.geeksforgeeks.org/thread-in-operating-system/?ref=lbp",
             "Process Synchronization": "https://www.geeksforgeeks.org/introduction-of-process-synchronization/?ref=lbp",
-            "Critical Section Problem Execution": "https://www.geeksforgeeks.org/petersons-algorithm-in-process-synchronization/?ref=lbp",
-            "Deadlocks & Deadlock Handling Methods": "https://www.geeksforgeeks.org/introduction-of-deadlock-in-operating-system/?ref=lbp",
+            "Critical Section Problem": "https://www.geeksforgeeks.org/petersons-algorithm-in-process-synchronization/?ref=lbp",
+            "Deadlocks": "https://www.geeksforgeeks.org/introduction-of-deadlock-in-operating-system/?ref=lbp",
             "Memory Management": "https://www.geeksforgeeks.org/memory-management-in-operating-system/?ref=lbp",
-            "Page Replacement Algorithms": "https://www.geeksforgeeks.org/page-replacement-algorithms-in-operating-systems/?ref=lbp",
+            "Page Replacement": "https://www.geeksforgeeks.org/page-replacement-algorithms-in-operating-systems/?ref=lbp",
             "Storage Management": "https://www.geeksforgeeks.org/storage-management/?ref=lbp"
         },
         # Topics for DBMS
         "DBMS": {
             "Basics of DBMS": "https://www.geeksforgeeks.org/introduction-of-dbms-database-management-system-set-1/?ref=lbp",
-            "Entity Relationship Model": "https://www.geeksforgeeks.org/introduction-of-er-model/?ref=lbp",
+            "ER Model": "https://www.geeksforgeeks.org/introduction-of-er-model/?ref=lbp",
             "Relational Model": "https://www.geeksforgeeks.org/introduction-of-relational-model-and-codd-rules-in-dbms/?ref=lbp",
             "Relational Algebra": "https://www.geeksforgeeks.org/introduction-of-relational-algebra-in-dbms/?ref=lbp",
             "Functional Dependencies": "https://www.geeksforgeeks.org/functional-dependency-and-attribute-closure/?ref=lbp",
             "Normalisation": "https://www.geeksforgeeks.org/introduction-of-database-normalization/?ref=lbp",
-            "Transactions and Concurrency Control": "https://www.geeksforgeeks.org/concurrency-control-in-dbms/?ref=lbp",
+            "TnC Control": "https://www.geeksforgeeks.org/concurrency-control-in-dbms/?ref=lbp",
             "Indexing, B and B+ Trees": "https://www.geeksforgeeks.org/indexing-in-databases-set-1/?ref=lbp",
             "File Organisation": "https://www.geeksforgeeks.org/file-organization-in-dbms-set-1/?ref=lbp"
         }
     }
-
     # Fetch URL based on selected topic and sub-topic
     selected_url = urls.get(topic, {}).get(subTopic, None)
     if not selected_url:
@@ -207,8 +205,8 @@ def generate_questions(topic, subTopic, questionType, numQuestions):
             "answer": answer_text,
             "context": chunk
         })
-
     return {"questions": generated_questions}
+
 
 def generate_questions_from_file(file_path, question_type, num_questions):
     try:
@@ -255,8 +253,6 @@ def generate_questions_from_file(file_path, question_type, num_questions):
 
     return {"questions": generated_questions}
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate questions")
     parser.add_argument('--topic', help="Topic name")
@@ -274,10 +270,4 @@ if __name__ == "__main__":
 
         print(json.dumps(result, indent=2))
     except Exception as e:
-        print(f"Error: {e}")
-    # if args.file:
-    #     result = generate_questions_from_file(args.file, args.questionType, args.numQuestions)
-    # else:
-    #     result = generate_questions(args.topic, args.subTopic, args.questionType, args.numQuestions)
-
-    # print(json.dumps({"questions": result}))
+        print(f"Error occurred: {e}")

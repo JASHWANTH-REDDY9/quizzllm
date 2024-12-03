@@ -11,8 +11,8 @@ const Quiz = () => {
     const [error, setError] = useState('');
 
     const topicMapping = {
-        OS: ["OS Basics", "Types of OS", "Process Management", "CPU Scheduling", "Threads", "Process Synchronization", "Critical Section Problem", "Deadlocks", "Memory Management", "Page Replacement", "Storage Management"],
-        DBMS: ["DBMS Basics", "ER Model", "Relational Algebra", "Functional Dependencies", "Normalisation", "TnC Control", "Indexing, B and B+ Trees", "File Organisation"],
+        OS: ["OS Basics", "Structure of OS", "Types of OS", "Process Management", "CPU Scheduling", "Threads", "Process Synchronization", "Critical Section Problem", "Deadlocks", "Memory Management", "Page Replacement", "Storage Management"],
+        DBMS: ["Basics of DBMS", "ER Model", "Relational Model", "Relational Algebra", "Functional Dependencies", "Normalisation", "TnC Control", "Indexing, B and B+ Trees", "File Organisation"],
         Java: ["Data Types", "OOPs Concepts", "Exception Handling"],
         JavaScript: ["Data Types", "Functions", "Loops"]
     };
@@ -122,7 +122,6 @@ const Quiz = () => {
                                 <li key={index} style={styles.questionItem}>
                                     <p><strong>Q{index + 1}:</strong> {q.question}</p>
                                     <p><strong>Answer:</strong> {q.answer}</p>
-                                    {/* <p><strong>Context:</strong> {q.context}</p> */}
                                 </li>
                             ))}
                         </ul>
