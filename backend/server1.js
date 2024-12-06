@@ -1,196 +1,235 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const { exec } = require('child_process');
-const multer = require('multer'); // For handling file uploads
-const path = require('path');
-const fs = require('fs');
+const express = require("express");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const { exec } = require("child_process");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 const port = process.env.PORT || 5001;
+const JWT_SECRET = "your_jwt_secret_key"; // Replace with an environment variable in production
 
 // Middleware
-app.use(cors()); // Enable CORS for all routes
+app.use(cors());
 app.use(bodyParser.json());
 
 // Configure Multer for file uploads
-const upload = multer({ dest: 'uploads/' }); // Uploaded files will be stored in 'uploads' folder
+const upload = multer({ dest: "uploads/" });
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/contactForm', { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log(err));
+mongoose
+  .connect("mongodb://localhost:27017/contactForm", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.log(err));
 
-// Define the Contact schema and model
+// Define Schemas
+// Contact Schema
 const contactSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    phone: String,
-    message: String
+  name: String,
+  email: String,
+  phone: String,
+  message: String,
 });
+const Contact = mongoose.model("Contact", contactSchema);
 
-const Contact = mongoose.model('Contact', contactSchema);
-
-// Define the Question schema and model for storing generated questions
+// Question Schema
 const questionSchema = new mongoose.Schema({
-    topic: String,
-    subTopic: String,
-    questionType: String,
-    numQuestions: Number,
-    questions: [{
-        question: String,
-        answer: String,
-        context: String,
-    }],
-    sourceType: { type: String, enum: ['pdf', 'non-pdf'], required: true }, // 'pdf' or 'non-pdf'
-    createdAt: { type: Date, default: Date.now },
+  topic: String,
+  subTopic: String,
+  questionType: String,
+  numQuestions: Number,
+  questions: [
+    {
+      question: String,
+      answer: String,
+      context: String,
+    },
+  ],
+  sourceType: { type: String, enum: ["pdf", "non-pdf"], required: true },
+  createdAt: { type: Date, default: Date.now },
+});
+const Question = mongoose.model("Question", questionSchema);
+const Submission = mongoose.model("submissions", questionSchema);
+
+// User Schema for Login/Registration
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+});
+const User = mongoose.model("User", userSchema);
+
+// API Endpoints
+// Register User
+app.post("/register", async (req, res) => {
+    const { email, password, confirmPassword } = req.body;
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      return res.status(400).send({ message: "Passwords do not match" });
+    }
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).send({ message: "User already exists" });
+    }
+    // Save user to database
+    const newUser = new User({ email, password }); // Plain-text password (not secure for production)
+    await newUser.save();
+    res.status(201).send({ message: "User registered successfully" });
+  });
+
+// Login User
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+  
+    try {
+      const user = await User.findOne({ email });
+      if (!user || user.password !== password) {
+        return res.status(400).send({ message: "Invalid email or password" });
+      }
+      res.status(200).send({ message: "Login successful" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({ message: "Error logging in" });
+    }
+  });
+
+// Contact Form Submission
+app.post("/api/contact", async (req, res) => {
+  const { name, email, phone, message } = req.body;
+
+  const newContact = new Contact({ name, email, phone, message });
+  try {
+    await newContact.save();
+    res.status(201).send("Contact saved");
+  } catch (err) {
+    res.status(400).send("Error saving contact");
+  }
 });
 
-const Question = mongoose.model('Question', questionSchema);
-const submission = mongoose.model('submissions', questionSchema);
+// Generate Questions
+app.post("/api/generate-questions", (req, res) => {
+  const { topic, subTopic, questionType, numQuestions } = req.body;
 
-// API endpoint to handle form submissions
-app.post('/api/contact', async (req, res) => {
-    const { name, email, phone, message } = req.body;
+  const command = `python3 main.py --topic "${topic}" --subTopic "${subTopic}" --questionType "${questionType}" --numQuestions ${numQuestions}`;
+  console.log("Running command:", command);
 
-    const newContact = new Contact({
-        name,
-        email,
-        phone,
-        message
-    });
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing main.py: ${stderr}`);
+      return res.status(500).send({ error: "Error generating questions" });
+    }
 
     try {
-        await newContact.save();
-        res.status(201).send('Contact saved');
-    } catch (err) {
-        res.status(400).send('Error saving contact');
+      const result = JSON.parse(stdout);
+
+      const newQuestions = new Question({
+        topic,
+        subTopic,
+        questionType,
+        numQuestions,
+        sourceType: "non-pdf",
+        questions: result.questions.map((q) => ({
+          question: q.question || "No question",
+          answer: q.answer || "No answer",
+          context: q.context || "No context",
+        })),
+      });
+
+      newQuestions
+        .save()
+        .then(() => {
+          console.log("Questions saved");
+          res.status(200).send(result);
+        })
+        .catch((err) => {
+          console.error("Error saving questions:", err);
+          res.status(500).send({ error: "Error saving questions to database" });
+        });
+    } catch (e) {
+      console.error("Error parsing Python output:", e);
+      res.status(500).send({ error: "Error parsing generated questions" });
     }
+  });
 });
 
-// API endpoint to generate questions
-app.post('/api/generate-questions', (req, res) => {
-    const { topic, subTopic, questionType, numQuestions } = req.body;
-
-    // Construct the command to run the Python script with the appropriate arguments
-    const command = `python3 main.py --topic "${topic}" --subTopic "${subTopic}" --questionType "${questionType}" --numQuestions ${numQuestions}`;
-    console.log("Running command:", command);
-
-    // Execute the Python script
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error executing main.py: ${stderr}`);
-            return res.status(500).send({ error: 'Error generating questions' });
-        }
-
-        // Parse the output from the Python script and send it back to the client
-        try {
-            const result = JSON.parse(stdout);
-
-            // Save the generated questions into the database with sourceType as 'non-pdf'
-            const newQuestions = new Question({
-                topic,
-                subTopic,
-                questionType,
-                numQuestions,
-                sourceType: 'non-pdf',  // Set source type as 'non-pdf'
-                questions: result.questions.map(q => ({
-                    question: q.question || 'No question',
-                    answer: q.answer || 'No answer',
-                    context: q.context || 'No context',
-                })),
-            });
-
-            // Save the questions to the database
-            newQuestions.save()
-                .then(() => {
-                    console.log('Questions saved');
-                    res.status(200).send(result);
-                })
-                .catch(err => {
-                    console.error('Error saving questions:', err);
-                    res.status(500).send({ error: 'Error saving questions to database' });
-                });
-
-        } catch (e) {
-            console.error('Error parsing Python output:', e);
-            res.status(500).send({ error: 'Error parsing generated questions' });
-        }
-    });
-});
-
-// API endpoint to fetch submission history
-app.get('/api/submissions', async (req, res) => {
-    try {
-        const nonPdfSubmissions = await Question.find();
-        const pdfSubmissions = await submission.find();
-        const allSubmissions = [...pdfSubmissions, ...nonPdfSubmissions];
-
-        res.status(200).json({ submissions: allSubmissions });
-    } catch (err) {
-        console.error('Error fetching submissions:', err);
-        res.status(500).send({ error: 'Error fetching submission history' });
-    }
-});
-
-// API endpoint to handle file upload and generate questions
-app.post('/api/upload-and-generate-questions', upload.single('file'), (req, res) => {
+// File Upload and Generate Questions
+app.post(
+  "/api/upload-and-generate-questions",
+  upload.single("file"),
+  (req, res) => {
     const { questionType, numQuestions } = req.body;
 
     if (!req.file) {
-        return res.status(400).send({ error: 'No file uploaded' });
+      return res.status(400).send({ error: "No file uploaded" });
     }
 
-    // Construct the command to run the Python script with the file path
     const filePath = path.resolve(req.file.path);
     const command = `python3 main.py --file "${filePath}" --questionType "${questionType}" --numQuestions ${numQuestions}`;
     console.log("Running command:", command);
 
-    // Execute the Python script
     exec(command, (error, stdout, stderr) => {
-        // Clean up the uploaded file
-        fs.unlinkSync(filePath);
+      fs.unlinkSync(filePath);
 
-        if (error) {
-            console.error(`Error executing main.py: ${stderr}`);
-            return res.status(500).send({ error: 'Error generating questions' });
-        }
+      if (error) {
+        console.error(`Error executing main.py: ${stderr}`);
+        return res.status(500).send({ error: "Error generating questions" });
+      }
 
-        // Parse the output from the Python script and send it back to the client
-        try {
-            const result = JSON.parse(stdout);
+      try {
+        const result = JSON.parse(stdout);
 
-            // Save the submission questions in the database with sourceType as 'pdf'
-            const newSubmission = new submission({
-                questionType,
-                numQuestions,
-                sourceType: 'pdf',  // Set source type as 'pdf'
-                questions: result.questions.map(q => ({
-                    question: q.question || 'No question',
-                    answer: q.answer || 'No answer',
-                    context: q.context || 'No context',
-                })),
-            });
+        const newSubmission = new Submission({
+          questionType,
+          numQuestions,
+          sourceType: "pdf",
+          questions: result.questions.map((q) => ({
+            question: q.question || "No question",
+            answer: q.answer || "No answer",
+            context: q.context || "No context",
+          })),
+        });
 
-            // Save the questions to the database
-            newSubmission.save()
-                .then(() => {
-                    console.log('Submission saved');
-                    res.status(200).send(result);
-                })
-                .catch(err => {
-                    console.error('Error saving submission:', err);
-                    res.status(500).send({ error: 'Error saving submission to database' });
-                });
-
-        } catch (e) {
-            console.error('Error parsing Python output:', e);
-            res.status(500).send({ error: 'Error parsing generated questions' });
-        }
+        newSubmission
+          .save()
+          .then(() => {
+            console.log("Submission saved");
+            res.status(200).send(result);
+          })
+          .catch((err) => {
+            console.error("Error saving submission:", err);
+            res
+              .status(500)
+              .send({ error: "Error saving submission to database" });
+          });
+      } catch (e) {
+        console.error("Error parsing Python output:", e);
+        res.status(500).send({ error: "Error parsing generated questions" });
+      }
     });
+  }
+);
+
+// Fetch Submission History
+app.get("/api/submissions", async (req, res) => {
+  try {
+    const nonPdfSubmissions = await Question.find();
+    const pdfSubmissions = await Submission.find();
+    const allSubmissions = [...pdfSubmissions, ...nonPdfSubmissions];
+
+    res.status(200).json({ submissions: allSubmissions });
+  } catch (err) {
+    console.error("Error fetching submissions:", err);
+    res.status(500).send({ error: "Error fetching submission history" });
+  }
 });
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });

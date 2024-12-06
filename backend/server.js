@@ -17,9 +17,6 @@ app.use(bodyParser.json());
 // Configure Multer for file uploads
 const upload = multer({ dest: 'uploads/' }); // Uploaded files will be stored in 'uploads' folder
 
-// Handle OPTIONS requests explicitly (for preflight)
-// app.options('*', cors()); // Preflight CORS handling
-
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/contactForm', { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected'))
@@ -34,6 +31,24 @@ const contactSchema = new mongoose.Schema({
 });
 
 const Contact = mongoose.model('Contact', contactSchema);
+
+// Define the Question schema and model for storing generated questions
+const questionSchema = new mongoose.Schema({
+    topic: String,
+    subTopic: String,
+    questionType: String,
+    numQuestions: Number,
+    questions: [{
+        question: String,
+        answer: String,
+        context: String,
+    }],
+    sourceType: { type: String, enum: ['pdf', 'non-pdf'], required: true }, // 'pdf' or 'non-pdf'
+    createdAt: { type: Date, default: Date.now },
+});
+
+const Question = mongoose.model('Question', questionSchema);
+const submission = mongoose.model('submissions', questionSchema);
 
 // API endpoint to handle form submissions
 app.post('/api/contact', async (req, res) => {
@@ -72,12 +87,51 @@ app.post('/api/generate-questions', (req, res) => {
         // Parse the output from the Python script and send it back to the client
         try {
             const result = JSON.parse(stdout);
-            res.status(200).send(result);
+
+            // Save the generated questions into the database with sourceType as 'non-pdf'
+            const newQuestions = new Question({
+                topic,
+                subTopic,
+                questionType,
+                numQuestions,
+                sourceType: 'non-pdf',  // Set source type as 'non-pdf'
+                questions: result.questions.map(q => ({
+                    question: q.question || 'No question',
+                    answer: q.answer || 'No answer',
+                    context: q.context || 'No context',
+                })),
+            });
+
+            // Save the questions to the database
+            newQuestions.save()
+                .then(() => {
+                    console.log('Questions saved');
+                    res.status(200).send(result);
+                })
+                .catch(err => {
+                    console.error('Error saving questions:', err);
+                    res.status(500).send({ error: 'Error saving questions to database' });
+                });
+
         } catch (e) {
             console.error('Error parsing Python output:', e);
             res.status(500).send({ error: 'Error parsing generated questions' });
         }
     });
+});
+
+// API endpoint to fetch submission history
+app.get('/api/submissions', async (req, res) => {
+    try {
+        const nonPdfSubmissions = await Question.find();
+        const pdfSubmissions = await submission.find();
+        const allSubmissions = [...pdfSubmissions, ...nonPdfSubmissions];
+
+        res.status(200).json({ submissions: allSubmissions });
+    } catch (err) {
+        console.error('Error fetching submissions:', err);
+        res.status(500).send({ error: 'Error fetching submission history' });
+    }
 });
 
 // API endpoint to handle file upload and generate questions
@@ -106,7 +160,30 @@ app.post('/api/upload-and-generate-questions', upload.single('file'), (req, res)
         // Parse the output from the Python script and send it back to the client
         try {
             const result = JSON.parse(stdout);
-            res.status(200).send(result);
+
+            // Save the submission questions in the database with sourceType as 'pdf'
+            const newSubmission = new submission({
+                questionType,
+                numQuestions,
+                sourceType: 'pdf',  // Set source type as 'pdf'
+                questions: result.questions.map(q => ({
+                    question: q.question || 'No question',
+                    answer: q.answer || 'No answer',
+                    context: q.context || 'No context',
+                })),
+            });
+
+            // Save the questions to the database
+            newSubmission.save()
+                .then(() => {
+                    console.log('Submission saved');
+                    res.status(200).send(result);
+                })
+                .catch(err => {
+                    console.error('Error saving submission:', err);
+                    res.status(500).send({ error: 'Error saving submission to database' });
+                });
+
         } catch (e) {
             console.error('Error parsing Python output:', e);
             res.status(500).send({ error: 'Error parsing generated questions' });

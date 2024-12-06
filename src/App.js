@@ -5,6 +5,7 @@ import Quiz from "./Quiz";
 import Cquiz from "./Cquiz";
 import Contact from "./contact";
 import History from "./history";
+import Login from "./Login";
 // import Chatbot from "./chatbot";
 // import Party from "./parties";
 // import Dataanalysis from "./dataanalysis";
@@ -15,6 +16,7 @@ function App() {
     <Router>
       <div>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<Quiz />} />
           <Route path="/cquiz" element={<Cquiz />} />
           <Route path="/history" element={<History />} />

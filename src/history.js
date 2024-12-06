@@ -5,6 +5,8 @@ import Footer from './components/footer';
 const History = () => {
     const [pdfHistory, setPdfHistory] = useState([]);
     const [nonPdfHistory, setNonPdfHistory] = useState([]);
+    const [expandedPdf, setExpandedPdf] = useState({}); // To track which PDF submissions are expanded
+    const [expandedNonPdf, setExpandedNonPdf] = useState({}); // To track which non-PDF submissions are expanded
 
     useEffect(() => {
         // Fetch the history from the backend
@@ -12,13 +14,17 @@ const History = () => {
             try {
                 const response = await fetch('http://localhost:5001/api/submissions');
                 const data = await response.json();
-                console.log('Fetched Data:', data); // Check the data in console
-
+                console.log('Fetched Data:', data);
+    
                 if (data.submissions) {
-                    // Separate PDF and non-PDF questions
-                    const pdfData = data.submissions.filter(submission => submission.sourceType === 'pdf');
-                    const nonPdfData = data.submissions.filter(submission => submission.sourceType === 'non-pdf');
-
+                    // Separate PDF and non-PDF submissions
+                    const pdfData = data.submissions
+                        .filter(submission => submission.sourceType === 'pdf')
+                        .reverse(); // Reverse the array so newest are at the top
+                    const nonPdfData = data.submissions
+                        .filter(submission => submission.sourceType === 'non-pdf')
+                        .reverse(); // Reverse the array so newest are at the top
+    
                     setPdfHistory(pdfData);
                     setNonPdfHistory(nonPdfData);
                 }
@@ -26,61 +32,94 @@ const History = () => {
                 console.error('Error fetching history:', error);
             }
         };
-
+    
         fetchHistory();
     }, []);
+    
+
+    const toggleExpand = (type, index) => {
+        if (type === 'pdf') {
+            setExpandedPdf(prevState => ({
+                ...prevState,
+                [index]: !prevState[index],
+            }));
+        } else if (type === 'nonPdf') {
+            setExpandedNonPdf(prevState => ({
+                ...prevState,
+                [index]: !prevState[index],
+            }));
+        }
+    };
 
     return (
-        <div style={{display:'flex', flexDirection:'column', minHeight:'100vh'}}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Header />
-            <section>
+            <section style={{paddingBottom:'0px'}}>
                 <div style={styles.formContainer}>
-                    <h3>History</h3>
-                    <hr style={styles.blackLine} />
-                    <div style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
-                        <div style={{display:'flex', flexDirection:'column'}}>
-                            <h3>PDF History</h3>
-                            {pdfHistory.length > 0 ? (
-                                <ul>
-                                    {pdfHistory.map((submission, index) => (
-                                        <li key={index}>
-                                            <h4>Topic: {submission.topic}</h4>
-                                            <ul>
+                    <div style={styles.historyWrapper}>
+                        <div style={styles.box}>
+                            <h3 style={styles.subheading}>Quiz History</h3>
+                            <div style={styles.scrollableContent}>
+                            {nonPdfHistory.length > 0 ? (
+                                nonPdfHistory.map((submission, index) => (
+                                    <div key={index} style={styles.submissionBox}>
+                                        <div
+                                            style={styles.toggleHeader}
+                                            onClick={() => toggleExpand('nonPdf', index)}
+                                        >
+                                            <h4>Topic: {submission.subTopic}</h4>
+                                            <span style={styles.toggleSymbol}>
+                                                {expandedNonPdf[index] ? '-' : '+'}
+                                            </span>
+                                        </div>
+                                        {expandedNonPdf[index] && (
+                                            <ul style={styles.questionsList}>
                                                 {submission.questions.map((q, idx) => (
-                                                    <li key={idx}>
-                                                        <p>{q.question}</p>
-                                                        <p>Answer: {q.answer}</p>
+                                                    <li key={idx} style={styles.questionItem}>
+                                                    <p><b>Question</b>: {q.question}</p>
+                                                    <p><b>Answer</b>: {q.answer}</p>
                                                     </li>
                                                 ))}
                                             </ul>
-                                        </li>
-                                    ))}
-                                </ul>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No Non-PDF submissions found.</p>
+                            )}
+                            </div>
+                        </div>
+                        <div style={styles.box}>
+                            <h3 style={styles.subheading}>Custom-Quiz History</h3>
+                            <div style={styles.scrollableContent}>
+                            {pdfHistory.length > 0 ? (
+                                pdfHistory.map((submission, index) => (
+                                    <div key={index} style={styles.submissionBox}>
+                                        <div
+                                            style={styles.toggleHeader}
+                                            onClick={() => toggleExpand('pdf', index)}
+                                        >
+                                            <h4>QType: {submission.questionType}</h4>
+                                            <span style={styles.toggleSymbol}>
+                                                {expandedPdf[index] ? '-' : '+'}
+                                            </span>
+                                        </div>
+                                        {expandedPdf[index] && (
+                                            <ul style={styles.questionsList}>
+                                                {submission.questions.map((q, idx) => (
+                                                    <li key={idx} style={styles.questionItem}>
+                                                        <p><b>Question</b>: {q.question}</p>
+                                                        <p><b>Answer</b>: {q.answer}</p>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                ))
                             ) : (
                                 <p>No PDF submissions found.</p>
                             )}
-                        </div>
-                        <div style={{display:'flex', flexDirection:'column'}}>
-                            <h3>Non-PDF History</h3>
-                            {nonPdfHistory.length > 0 ? (
-                                <ul>
-                                    {nonPdfHistory.map((submission, index) => (
-                                        <li key={index}>
-                                            <h4>Topic: {submission.topic}</h4>
-                                            <ul>
-                                                {submission.questions.map((q, idx) => (
-                                                    <li key={idx}>
-                                                        <p>{q.question}</p>
-                                                        <p>Answer: {q.answer}</p>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No non-PDF submissions found.</p>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -92,22 +131,66 @@ const History = () => {
 
 const styles = {
     formContainer: {
+        padding: '35px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '20px',
-        border: '3px solid #ccc',
-        borderRadius: '5px',
-        minHeight: '59vh',
-        maxWidth: '55%',
-        marginTop: '20px',
-        marginLeft: '22%',
     },
-    blackLine: {
-        border: 'none',
-        borderTop: '2px solid black',
+    historyWrapper: {
+        display: 'flex',
+        justifyContent: 'space-between',
         width: '80%',
-        margin: '20px auto',
+        gap: '20px',
+    },
+    box: {
+        flex: 1,
+        border: '2px solid #ccc',
+        borderRadius: '5px',
+        backgroundColor: '#f9f9f9',
+        padding: '20px',
+        // height: '500px', // Fixed height for the box itself
+        height: '58vh', // Maximum height for the box
+        display: 'flex',
+        flexDirection: 'column', // Ensures proper layout for scrolling
+    },
+    subheading: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+        marginBottom: '10px',
+    },
+    scrollableContent: {
+        flex: 1, // Ensures the scrollable area fills the available space
+        overflowY: 'auto', // Enables vertical scrolling
+        padding: '10px',
+        border: '1px solid #ddd',
+        borderRadius: '5px',
+        backgroundColor: '#fff',
+    },
+    submissionBox: {
+        marginBottom: '10px',
+        padding: '10px',
+        backgroundColor: '#fff',
+        borderRadius: '5px',
+        boxShadow: '0px 2px 4px rgba(0,0,0,0.1)',
+    },
+    toggleHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        cursor: 'pointer',
+        padding: '10px',
+        borderBottom: '1px solid #ddd',
+    },
+    toggleSymbol: {
+        fontSize: '20px',
+        fontWeight: 'bold',
+    },
+    questionsList: {
+        listStyleType: 'none',
+        paddingLeft: '10px',
+        marginTop: '10px',
+    },
+    questionItem: {
+        marginBottom: '10px',
     },
 };
 
