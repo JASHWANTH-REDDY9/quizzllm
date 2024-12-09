@@ -11,27 +11,37 @@ const Cquiz = () => {
 
     const handleSubmit = async () => {
         setError('');
+        setQuestions([]); // Clear previous questions on new submission
+    
         if (!file || !questionType || !numQuestions) {
             setError('Please upload a file and select all fields');
             return;
         }
-
+    
+        // Retrieve email from localStorage
+        const email = localStorage.getItem('email');
+        if (!email) {
+            setError('Email is required. Please log in again.');
+            console.error('No email found in localStorage.');
+            return;
+        }
+    
         const formData = new FormData();
         formData.append('file', file);
         formData.append('questionType', questionType);
         formData.append('numQuestions', numQuestions);
-
+        formData.append('email', email); // Add the email to the FormData
+    
         try {
             const response = await fetch('http://localhost:5001/api/upload-and-generate-questions', {
                 method: 'POST',
                 body: formData,
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
                 console.log('Received data:', data);
-
-                // Check if data.questions is valid and non-empty
+    
                 if (data && data.questions && Array.isArray(data.questions)) {
                     const parsedQuestions = data.questions.map((q) => ({
                         question: q.question || 'No question text available',
@@ -43,7 +53,6 @@ const Cquiz = () => {
                     console.error('Invalid data format or no questions found:', data);
                     setError('No questions generated or invalid data format.');
                 }
-                
             } else {
                 const errorText = await response.text();
                 console.error('Backend error:', errorText);
@@ -54,10 +63,11 @@ const Cquiz = () => {
             setError('Error fetching data: ' + error.message);
         }
     };
-
+    
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
+    
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

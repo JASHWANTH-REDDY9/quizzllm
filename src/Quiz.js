@@ -19,58 +19,49 @@ const Quiz = () => {
 
     const handleSubmit = async () => {
         setError('');
+        setQuestions([]); // Clear previous questions on new submission
         if (!topic || !subTopic || !questionType || !numQuestions) {
             setError('Please select all fields');
-            return; // Prevent submitting the form if any field is missing
+            return;
         }
-      
+    
         try {
+            // Retrieve email from localStorage
+            const email = localStorage.getItem('email');
+            if (!email) {
+                setError('Email is required. Please log in again.');
+                console.error('No email found in localStorage.');
+                return;
+            }
+    
+            console.log("Sending request to server:", { topic, subTopic, questionType, numQuestions, email });
+    
             const response = await fetch('http://localhost:5001/api/generate-questions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic, subTopic, questionType, numQuestions }),
+                body: JSON.stringify({ topic, subTopic, questionType, numQuestions, email }),
             });
-      
+    
             if (response.ok) {
                 const data = await response.json();
-                console.log('Received data:', data); // Log the response to inspect it
-      
-                // Check if data and questions are valid
+                console.log('Received data:', data);
+    
                 if (data && Array.isArray(data.questions)) {
-                    console.log('Questions:', data.questions);  // Log the questions array to inspect
-                    
-                    // Map through each question and extract necessary details
-                    const parsedQuestions = data.questions.map((q, index) => {
-                        console.log(`Raw Question Data ${index}:`, q);  // Log each question in raw form
-    
-                        // Check if q is an object and contains the necessary properties
-                        if (q && typeof q === 'object') {
-                            return {
-                                question: q.question || 'No question text available',
-                                answer: q.answer || 'No answer available',
-                                // context: q.context || 'No context available',
-                            };
-                        } else {
-                            return {
-                                question: 'No question text available',
-                                answer: 'No answer available',
-                                context: 'No context available',
-                            };
-                        }
-                    });
-    
-                    setQuestions(parsedQuestions); // Set questions state if valid
+                    setQuestions(data.questions);
                 } else {
-                    setError('No questions generated or invalid data format.');
+                    setError('No questions generated or invalid response format.');
                 }
             } else {
-                setError('Failed to fetch questions');
+                const errorData = await response.json(); // Get error details from the server
+                console.error('Server Error:', errorData);
+                setError(errorData.message || 'Failed to fetch questions');
             }
         } catch (error) {
+            console.error('Network or Fetch Error:', error);
             setError('Error fetching data: ' + error.message);
         }
     };
-
+    
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Header />

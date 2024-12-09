@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Lheader from "./components/loginheader";
+import Footer from "./components/footer";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
@@ -41,20 +43,18 @@ const Login = () => {
   };
 
   const styles = {
-    section: {
+    sec: {
       display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      Height: "10vh",
-      width: "50%",
-      background: "url('/6213932.jpg') no-repeat center center/cover",
+    //   background: "url('/6213932.jpg') no-repeat center center/cover",
+    flexDirection: 'column',
+    justifyContent: 'center',
     },
     sectionBgOverlay: {
       width: "100%",
-      height: "50vh",
+      height: "64vh",
       backgroundColor: "rgba(208,148,34,0.50)",
       display: "flex",
-      justifyContent: "center",
+      justifyContent:'space-evenly',
       alignItems: "center",
       color: "white",
     },
@@ -123,10 +123,18 @@ const Login = () => {
       textAlign: "center",
       margin: "20px 0 10px",
     },
+    blackLine: {
+        border: 'none',
+        borderTop: '2px solid black',
+        height: '10%',
+        margin: '20px auto',
+    },
   };
 
   return (
-    <section style={styles.section}>
+    // <section style={styles.section}>
+    <div style={styles.sec}>
+      <Lheader />
       <div style={styles.sectionBgOverlay}>
         <div style={styles.formBox}>
           <form onSubmit={handleSubmit}>
@@ -193,9 +201,13 @@ const Login = () => {
             </div>
           </form>
         </div>
-      <div><h1>hello</h1></div>
+        <div style={{height:'100%',width:'2px',backgroundColor:'black'}}></div>
+        {/* <hr style={styles.blackLine} /> */}
+      <div><h1>hello0000000</h1></div>
       </div>
-    </section>
+      <Footer />
+      </div>
+    // </section>
   );
 };
 

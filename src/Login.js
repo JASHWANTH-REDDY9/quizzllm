@@ -15,6 +15,11 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSignup && formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
     const endpoint = isSignup ? "/register" : "/login";
     const payload = isSignup
       ? { email: formData.email, password: formData.password, confirmPassword: formData.confirmPassword }
@@ -30,8 +35,13 @@ const Login = () => {
       const result = await response.json();
       if (response.ok) {
         alert(result.message);
+
+        // Store the email in localStorage
+        localStorage.setItem("email", formData.email);
+
+        // If it's a login, redirect to the home page
         if (!isSignup) {
-          navigate("/"); // Redirect to home page after login
+          navigate("/");
         }
       } else {
         alert(result.message || "Something went wrong!");
@@ -41,26 +51,14 @@ const Login = () => {
       alert("Error connecting to the server. Please try again.");
     }
   };
+  
 
   const styles = {
-    // section: {
-    //   display: "flex",
-    //   justifyContent: "center",
-    //   alignItems: "center",
-    //   Height: "10vh",
-    //   width: "50%",
-    //   background: "url('/6213932.jpg') no-repeat center center/cover",
-    // },
     sec: {
       display: "flex",
-    //   justifyContent: "center",
-    //   alignItems: "center",
-    //   Height: "10vh",
-    //   width: "50%",
     //   background: "url('/6213932.jpg') no-repeat center center/cover",
     flexDirection: 'column',
     justifyContent: 'center',
-    // alignItems: 'center',
     },
     sectionBgOverlay: {
       width: "100%",
