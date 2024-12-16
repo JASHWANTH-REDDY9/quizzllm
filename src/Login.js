@@ -39,10 +39,19 @@ const Login = () => {
         // Store the email in localStorage
         localStorage.setItem("email", formData.email);
 
-        // If it's a login, redirect to the home page
-        if (!isSignup) {
-          navigate("/");
+        
+        if (isSignup) {
+          // Switch to login form after successful registration
+          setIsSignup(false);
+          setFormData({ email: "", password: "", confirmPassword: "" });
+        } else {
+          // Store the email in localStorage
+          localStorage.setItem("email", formData.email);
+          // Redirect to the home page after login
+          navigate("/quiz");
         }
+        
+        
       } else {
         alert(result.message || "Something went wrong!");
       }
@@ -63,18 +72,18 @@ const Login = () => {
     sectionBgOverlay: {
       width: "100%",
       height: "64vh",
-      backgroundColor: "rgba(208,148,34,0.50)",
+      backgroundColor: "rgba(239, 227, 227, 0.5)",
       display: "flex",
       justifyContent:'space-evenly',
       alignItems: "center",
-      color: "white",
+      color: "#2c3e50",
     },
     formBox: {
       position: "relative",
       width: "400px",
       height: "auto",
       background: "transparent",
-      border: "2px solid rgba(255,255,255,0.5)",
+      border: "2px solid #2c3e50",
       borderRadius: "20px",
       backdropFilter: "blur(15px)",
       WebkitBackdropFilter: "blur(15px)",
@@ -87,7 +96,7 @@ const Login = () => {
       position: "relative",
       margin: "20px 0",
       width: "310px",
-      borderBottom: "2px solid #fff",
+      borderBottom: "2px solid #2c3e50",
     },
     input: {
       width: "100%",
@@ -97,14 +106,14 @@ const Login = () => {
       outline: "none",
       fontSize: "1em",
       padding: "0 35px 0 5px",
-      color: "#fff",
+      color: "#2c3e50",
     },
     label: {
       position: "absolute",
       top: "50%",
       left: "5px",
       transform: "translateY(-50%)",
-      color: "#fff",
+      color: "#2c3e50",
       fontSize: "1em",
       pointerEvents: "none",
       transition: ".5s",
@@ -113,24 +122,24 @@ const Login = () => {
       width: "100%",
       height: "40px",
       borderRadius: "40px",
-      background: "#8e7842",
+      background: "#2c3e50",
       border: "none",
       outline: "none",
       cursor: "pointer",
       fontSize: "1em",
       fontWeight: "600",
-      color: "#ffffff",
+      color: "white",
       marginTop: "15px",
     },
     toggleLink: {
       textDecoration: "none",
-      color: "#fff",
+      color: "#2c3e50",
       fontWeight: "600",
       cursor: "pointer",
     },
     register: {
       fontSize: ".9em",
-      color: "#fff",
+      color: "#2c3e50",
       textAlign: "center",
       margin: "20px 0 10px",
     },
@@ -204,6 +213,7 @@ const Login = () => {
                   onClick={() => {
                     setIsSignup(!isSignup);
                     setFormData({ email: "", password: "", confirmPassword: "" }); // Reset form
+                    
                   }}
                 >
                   {isSignup ? "Login" : "Register"}
@@ -213,8 +223,9 @@ const Login = () => {
           </form>
         </div>
         <div style={{height:'100%',width:'2px',backgroundColor:'black'}}></div>
-        {/* <hr style={styles.blackLine} /> */}
-      <div><h1>hello0000000</h1></div>
+      <div>
+        <img src="/assets/img/quiz image.png" alt="img" style={{ width:'140%'}} />
+      </div>
       </div>
       <Footer />
       </div>
