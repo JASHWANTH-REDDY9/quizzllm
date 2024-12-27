@@ -8,10 +8,16 @@ const Cquiz = () => {
     const [numQuestions, setNumQuestions] = useState('');
     const [questions, setQuestions] = useState([]);
     const [error, setError] = useState('');
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Track the current question
+    const [showAnswer, setShowAnswer] = useState(false); // Toggle answer visibility
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async () => {
         setError('');
         setQuestions([]); // Clear previous questions on new submission
+        setCurrentQuestionIndex(0); // Reset question index
+        setShowAnswer(false); // Hide answer by default
+        setLoading(true);
     
         if (!file || !questionType || !numQuestions) {
             setError('Please upload a file and select all fields');
@@ -67,6 +73,20 @@ const Cquiz = () => {
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
+
+    const handleNext = () => {
+        if (currentQuestionIndex < questions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+            setShowAnswer(false); // Hide answer for the next question
+        }
+    };
+
+    const handleBack = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(currentQuestionIndex - 1);
+            setShowAnswer(false); // Hide answer for the previous question
+        }
+    };
     
 
     return (
@@ -81,9 +101,9 @@ const Cquiz = () => {
                     >
                         <option value="">Select Question Type</option>
                         <option value="mcq">MCQ's</option>
-                        <option value="True_or_false">Booleans</option>
+                        {/* <option value="True_or_false">Booleans</option> */}
                         <option value="short_qa">Short Answers</option>
-                        <option value="fill_in_the_blanks">Fill in the blanks</option>
+                        {/* <option value="fill_in_the_blanks">Fill in the blanks</option> */}
                     </select>
                     <select
                         style={styles.dropdown}
@@ -116,20 +136,42 @@ const Cquiz = () => {
                     <h3 style={styles.questionTitle}>Generated Questions:</h3>
                     {error && <p style={{ color: 'red' }}>{error}</p>}
                     {questions.length > 0 ? (
-                        <ul style={styles.questionList}>
-                            {questions.map((q, index) => (
-                                <li key={index} style={styles.questionItem}>
-                                    <p>
-                                        <strong>Q{index + 1}:</strong> {q.question}
-                                    </p>
-                                    <p>
-                                        <strong>Answer:</strong> {q.answer}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
+                        <div style={styles.questionItem}>
+                            <p><strong>Q{currentQuestionIndex + 1}:</strong> {questions[currentQuestionIndex].question}</p>
+                            {showAnswer ? (
+                                <p><strong>Answer:</strong> {questions[currentQuestionIndex].answer}</p>
+                            ) : (
+                                <button
+                                    onClick={() => setShowAnswer(true)}
+                                    style={styles.showAnswerButton}
+                                >
+                                    Show Answer
+                                </button>
+                            )}
+                            <hr style={styles.blackLine} />
+                            <div style={styles.navigationButtons}>
+                                <button
+                                    onClick={handleBack}
+                                    disabled={currentQuestionIndex === 0}
+                                    style={styles.navButton}
+                                >
+                                    Back
+                                </button>
+                                <button
+                                    onClick={handleNext}
+                                    disabled={currentQuestionIndex === questions.length - 1}
+                                    style={styles.navButton}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
                     ) : (
-                        <p style={styles.noQuestions}>No questions generated yet.</p>
+                        loading ? (
+                            <p>Questions are being generated...</p>
+                        ) : (
+                            <p style={styles.noQuestions}>No questions generated</p>
+                        )
                     )}
                 </div>
             </section>
@@ -139,6 +181,27 @@ const Cquiz = () => {
 };
 
 const styles = {
+    showAnswerButton: {
+        padding: '8px 15px',
+        backgroundColor: '#28a745',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+    },
+    navigationButtons: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginTop: '10px',
+    },
+    navButton: {
+        padding: '8px 15px',
+        backgroundColor: '#007bff',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+    },
     formContainer: {
         display: 'flex',
         flexDirection: 'row',

@@ -9,59 +9,75 @@ const Quiz = () => {
     const [numQuestions, setNumQuestions] = useState('');
     const [questions, setQuestions] = useState([]);
     const [error, setError] = useState('');
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Track the current question
+    const [showAnswer, setShowAnswer] = useState(false); // Toggle answer visibility
+    const [loding, setLoading] = useState(false);
 
     const topicMapping = {
         OS: ["OS Basics", "Structure of OS", "Types of OS", "Process Management", "CPU Scheduling", "Threads", "Process Synchronization", "Critical Section Problem", "Deadlocks", "Memory Management", "Page Replacement", "Storage Management"],
         DBMS: ["Basics of DBMS", "ER Model", "Relational Model", "Relational Algebra", "Functional Dependencies", "Normalisation", "TnC Control", "Indexing, B and B+ Trees", "File Organisation"],
-        Java: ["Data Types", "OOPs Concepts", "Exception Handling"],
-        JavaScript: ["Data Types", "Functions", "Loops"]
+        Java: ["Data Types", "Operators", "Control Statements", "Loops", "Arrays", "Strings", "Classes", "Interfaces", "Packages", "OOPS", "Exceptions", "Multithreading", "Collections", "File Handling", "JDBC"],
+        JavaScript: ["Basics", "Variables", "Operators", "Control Statements", "Functions", "Arrays", "Objects", "DOM", "Events", "ES6", "AJAX", "JSON", "NodeJS", "ReactJS", "AngularJS", "VueJS"]
     };
 
     const handleSubmit = async () => {
         setError('');
-        setQuestions([]); // Clear previous questions on new submission
+        setQuestions([]);
+        setCurrentQuestionIndex(0); // Reset question index
+        setShowAnswer(false); // Hide answer by default
+        setLoading(true);
+
         if (!topic || !subTopic || !questionType || !numQuestions) {
             setError('Please select all fields');
             return;
         }
-    
+
         try {
-            // Retrieve email from localStorage
             const email = localStorage.getItem('email');
             if (!email) {
                 setError('Email is required. Please log in again.');
                 console.error('No email found in localStorage.');
                 return;
             }
-    
             console.log("Sending request to server:", { topic, subTopic, questionType, numQuestions, email });
-    
+
             const response = await fetch('http://localhost:5001/api/generate-questions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ topic, subTopic, questionType, numQuestions, email }),
             });
-    
+
             if (response.ok) {
                 const data = await response.json();
                 console.log('Received data:', data);
-    
                 if (data && Array.isArray(data.questions)) {
                     setQuestions(data.questions);
                 } else {
                     setError('No questions generated or invalid response format.');
                 }
             } else {
-                const errorData = await response.json(); // Get error details from the server
-                console.error('Server Error:', errorData);
+                const errorData = await response.json();
                 setError(errorData.message || 'Failed to fetch questions');
             }
         } catch (error) {
-            console.error('Network or Fetch Error:', error);
             setError('Error fetching data: ' + error.message);
         }
     };
-    
+
+    const handleNext = () => {
+        if (currentQuestionIndex < questions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+            setShowAnswer(false); // Hide answer for the next question
+        }
+    };
+
+    const handleBack = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(currentQuestionIndex - 1);
+            setShowAnswer(false); // Hide answer for the previous question
+        }
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Header />
@@ -69,7 +85,7 @@ const Quiz = () => {
                 <div style={styles.formContainer}>
                     <select style={styles.dropdown} value={topic} onChange={(e) => { 
                         setTopic(e.target.value); 
-                        setSubTopic(''); // Reset subTopic when topic changes
+                        setSubTopic('');
                     }}>
                         <option value="">Select Topic</option>
                         {Object.keys(topicMapping).map((key) => (
@@ -85,9 +101,7 @@ const Quiz = () => {
                     <select style={styles.dropdown} value={questionType} onChange={(e) => setQuestionType(e.target.value)}>
                         <option value="">Select Question Type</option>
                         <option value="mcq">MCQ's</option>
-                        <option value="True_or_false">Booleans</option>
                         <option value="short_qa">Short Answers</option>
-                        <option value="fill_in_the_blanks">Fill in the blanks</option>
                     </select>
                     <select style={styles.dropdown} value={numQuestions} onChange={(e) => setNumQuestions(e.target.value)}>
                         <option value="">Select Number of Questions</option>
@@ -106,21 +120,47 @@ const Quiz = () => {
                 <hr style={styles.blackLine} />
                 <div style={styles.questionBox}>
                     <h3 style={styles.questionTitle}>Generated Questions:</h3>
-                    {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error */}
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
                     {questions.length > 0 ? (
-                        <ul style={styles.questionList}>
-                            {questions.map((q, index) => (
-                                <li key={index} style={styles.questionItem}>
-                                    <p><strong>Q{index + 1}:</strong> {q.question}</p>
-                                    <p><strong>Answer:</strong> {q.answer}</p>
-                                </li>
-                            ))}
-                        </ul>
+                        <div style={styles.questionItem}>
+                            <p><strong>Q{currentQuestionIndex + 1}:</strong> {questions[currentQuestionIndex].question}</p>
+                            {showAnswer ? (
+                                <p><strong>Answer:</strong> {questions[currentQuestionIndex].answer}</p>
+                            ) : (
+                                <button
+                                    onClick={() => setShowAnswer(true)}
+                                    style={styles.showAnswerButton}
+                                >
+                                    Show Answer
+                                </button>
+                            )}
+                            <hr style={styles.blackLine} />
+                            <div style={styles.navigationButtons}>
+                                <button
+                                    onClick={handleBack}
+                                    disabled={currentQuestionIndex === 0}
+                                    style={styles.navButton}
+                                >
+                                    Back
+                                </button>
+                                <button
+                                    onClick={handleNext}
+                                    disabled={currentQuestionIndex === questions.length - 1}
+                                    style={styles.navButton}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
                     ) : (
-                        <p style={styles.noQuestions}>No questions generated yet.</p>
+                        loding ? (
+                            <p>Questions are being generated...</p>
+                        ) : (
+                            <p style={styles.noQuestions}>No questions generated</p>
+                        )
+                        
                     )}
                 </div>
-
             </section>
             <Footer />
         </div>
@@ -128,6 +168,27 @@ const Quiz = () => {
 };
 
 const styles = {
+    showAnswerButton: {
+        padding: '8px 15px',
+        backgroundColor: '#28a745',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+    },
+    navigationButtons: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginTop: '10px',
+    },
+    navButton: {
+        padding: '8px 15px',
+        backgroundColor: '#007bff',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+    },
     formContainer: {
         display: 'flex',
         flexDirection: 'row',

@@ -3,8 +3,8 @@ import React from 'react';
 const Footer = () => {
   return (
     <div>
-      <footer class="text-center footer">
-        <div class="container">
+      <footer class="text-center footer" >
+        <div class="container" style={{height:'50px'}}>
             <div class="row">
                 <div class="col-md-4 mb-5 mb-lg-0">
                     <h4 class="text-uppercase mb-4">Location</h4>

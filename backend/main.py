@@ -159,7 +159,42 @@ def generate_questions(topic, subTopic, questionType, numQuestions):
             "TnC Control": "https://www.geeksforgeeks.org/concurrency-control-in-dbms/?ref=lbp",
             "Indexing, B and B+ Trees": "https://www.geeksforgeeks.org/indexing-in-databases-set-1/?ref=lbp",
             "File Organisation": "https://www.geeksforgeeks.org/file-organization-in-dbms-set-1/?ref=lbp"
-        }
+        },
+        "Java": {
+            "data types": "https://www.geeksforgeeks.org/data-types-in-java/?ref=lbp",
+            "operators": "https://www.geeksforgeeks.org/operators-in-java/?ref=lbp",
+            "control statements": "https://www.geeksforgeeks.org/decision-making-javaif-else-switch-break-continue-jump/?ref=lbp",
+            "loops": "https://www.geeksforgeeks.org/loops-in-java/?ref=lbp",
+            "arrays": "https://www.geeksforgeeks.org/arrays-in-java/?ref=lbp",
+            "strings": "https://www.geeksforgeeks.org/strings-in-java/?ref=lbp",
+            "classes": "https://www.geeksforgeeks.org/classes-objects-java/?ref=lbp",
+            "interfaces": "https://www.geeksforgeeks.org/interfaces-in-java/?ref=lbp",
+            "packages": "https://www.geeksforgeeks.org/packages-in-java/?ref=lbp",
+            "OOPS" : "https://www.geeksforgeeks.org/object-oriented-programming-oops-concept-in-java/?ref=lbp",
+            "exceptions": "https://www.geeksforgeeks.org/exceptions-in-java/?ref=lbp",
+            "multithreading": "https://www.geeksforgeeks.org/multithreading-in-java/?ref=lbp",
+            "collections": "https://www.geeksforgeeks.org/collections-in-java/?ref=lbp",
+            "file handling": "https://www.geeksforgeeks.org/file-handling-in-java/",
+            "jdbc" : "https://www.geeksforgeeks.org/introduction-to-jdbc/",
+        },
+        "JavaScript": {
+            "basics": "https://www.geeksforgeeks.org/introduction-to-javascript/?ref=lbp",
+            "variables": "https://www.geeksforgeeks.org/javascript-variables/",
+            "operators": "https://www.geeksforgeeks.org/javascript-operators/?ref=lbp",
+            "control statements": "https://www.geeksforgeeks.org/control-statements-in-javascript/?ref=lbp",
+            "functions": "https://www.geeksforgeeks.org/functions-in-javascript/?ref=lbp",
+            "arrays": "https://www.geeksforgeeks.org/arrays-in-javascript/?ref=lbp",
+            "objects": "https://www.geeksforgeeks.org/objects-in-javascript/?ref=lbp",
+            "DOM": "https://www.geeksforgeeks.org/how-to-manipulate-dom-elements-in-javascript/",
+            "events": "https://www.geeksforgeeks.org/javascript-events/?ref=lbp",
+            "ES6": "https://www.geeksforgeeks.org/ecmascript-6-es6/?ref=lbp",
+            "AJAX": "https://www.geeksforgeeks.org/difference-between-ajax-and-fetch-api/",
+            "JSON": "https://www.geeksforgeeks.org/json-introduction/?ref=lbp",
+            "NodeJS": "https://www.geeksforgeeks.org/node-js-basics/",
+            "ReactJS": "https://www.geeksforgeeks.org/reactjs-basics-concepts-complete-reference/",
+            "AngularJS" : "https://www.geeksforgeeks.org/angularjs/",
+            "VueJS": "https://www.geeksforgeeks.org/vue-js/",
+        },
     }
     # Fetch URL based on selected topic and sub-topic
     selected_url = urls.get(topic, {}).get(subTopic, None)
