@@ -5,15 +5,15 @@ import Footer from "./components/footer";
 const History = () => {
   const [pdfHistory, setPdfHistory] = useState([]);
   const [nonPdfHistory, setNonPdfHistory] = useState([]);
-  const [expandedPdf, setExpandedPdf] = useState({}); // To track which PDF submissions are expanded
-  const [expandedNonPdf, setExpandedNonPdf] = useState({}); // To track which non-PDF submissions are expanded
-  const [loading, setLoading] = useState(true); // For loading state
-  const [error, setError] = useState(null); // For error handling
+  const [expandedPdf, setExpandedPdf] = useState({});
+  const [expandedNonPdf, setExpandedNonPdf] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const email = localStorage.getItem("email"); // Retrieve email from localStorage
+        const email = localStorage.getItem("email");
 
         if (!email) {
           setError("No email found. User is not authenticated.");
@@ -21,11 +21,11 @@ const History = () => {
         }
 
         const response = await fetch("http://localhost:5001/api/submissions", {
-          method: "POST", // Using POST to send email in the request body
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email }), // Send email as JSON
+          body: JSON.stringify({ email }),
         });
 
         if (!response.ok) {
@@ -35,16 +35,14 @@ const History = () => {
         }
 
         const data = await response.json();
-        console.log("API Response Data:", data); // Log the entire data object
 
         if (data.submissions && Array.isArray(data.submissions)) {
-          // Separate PDF and non-PDF submissions
           const pdfData = data.submissions
             .filter((submission) => submission.sourceType === "pdf")
-            .reverse(); // Reverse the array so newest are at the top
+            .reverse();
           const nonPdfData = data.submissions
             .filter((submission) => submission.sourceType === "non-pdf")
-            .reverse(); // Reverse the array so newest are at the top
+            .reverse();
 
           setPdfHistory(pdfData);
           setNonPdfHistory(nonPdfData);
@@ -86,7 +84,7 @@ const History = () => {
 
   return (
     <div
-      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+      style={{ display: "flex", flexDirection: "column",}}
     >
       <Header />
       <section style={{ paddingBottom: "0px" }}>
@@ -109,21 +107,26 @@ const History = () => {
                       </div>
                       {expandedNonPdf[index] && (
                         <ul style={styles.questionsList}>
-                          {submission.questions.map((q, idx) => {
-                            console.log("Question Data:", q); // Log each question object
-                            return (
-                              <li key={idx} style={styles.questionItem}>
-                                <p>
-                                  <b>Question</b>:{" "}
-                                  {q.question || "No question available"}
-                                </p>
-                                <p>
-                                  <b>Answer</b>:{" "}
-                                  {q.answer || "No answer available"}
-                                </p>
-                              </li>
-                            );
-                          })}
+                          {submission.questions.map((q, idx) => (
+                            <li key={idx} style={styles.questionItem}>
+                              <p>
+                                <b>Question:</b> {q.question || "No question available"}
+                              </p>
+                              {q.options && q.options.length > 0 && (
+                                <div>
+                                  <b>Options:</b>
+                                  <ul>
+                                    {q.options.map((option, optionIdx) => (
+                                      <li key={optionIdx}>{option}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              <p>
+                                <b>Answer:</b> {q.answer || "No answer available"}
+                              </p>
+                            </li>
+                          ))}
                         </ul>
                       )}
                     </div>
@@ -153,10 +156,20 @@ const History = () => {
                           {submission.questions.map((q, idx) => (
                             <li key={idx} style={styles.questionItem}>
                               <p>
-                                <b>Question</b>: {q.question}
+                                <b>Question:</b> {q.question}
                               </p>
+                              {q.options && q.options.length > 0 && (
+                                <div>
+                                  <b>Options:</b>
+                                  <ul>
+                                    {q.options.map((option, optionIdx) => (
+                                      <li key={optionIdx}>{option}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                               <p>
-                                <b>Answer</b>: {q.answer}
+                                <b>Answer:</b> {q.answer}
                               </p>
                             </li>
                           ))}
@@ -178,68 +191,68 @@ const History = () => {
 };
 
 const styles = {
-  formContainer: {
-    padding: "35px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  historyWrapper: {
-    display: "flex",
-    justifyContent: "space-between",
-    width: "80%",
-    gap: "20px",
-  },
-  box: {
-    flex: 1,
-    border: "2px solid #ccc",
-    borderRadius: "5px",
-    backgroundColor: "#f9f9f9",
-    padding: "20px",
-    // height: '500px', // Fixed height for the box itself
-    height: "58vh", // Maximum height for the box
-    display: "flex",
-    flexDirection: "column", // Ensures proper layout for scrolling
-  },
-  subheading: {
-    textAlign: "center",
-    fontWeight: "bold",
-    marginBottom: "10px",
-  },
-  scrollableContent: {
-    flex: 1, // Ensures the scrollable area fills the available space
-    overflowY: "auto", // Enables vertical scrolling
-    padding: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    backgroundColor: "#fff",
-  },
-  submissionBox: {
-    marginBottom: "10px",
-    padding: "10px",
-    backgroundColor: "#fff",
-    borderRadius: "5px",
-    boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
-  },
-  toggleHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    cursor: "pointer",
-    padding: "10px",
-    borderBottom: "1px solid #ddd",
-  },
-  toggleSymbol: {
-    fontSize: "20px",
-    fontWeight: "bold",
-  },
-  questionsList: {
-    listStyleType: "none",
-    paddingLeft: "10px",
-    marginTop: "10px",
-  },
-  questionItem: {
-    marginBottom: "10px",
-  },
-};
+    formContainer: {
+      padding: "35px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    },
+    historyWrapper: {
+      display: "flex",
+      justifyContent: "space-between",
+      width: "80%",
+      gap: "20px",
+    },
+    box: {
+      flex: 1,
+      border: "2px solid #ccc",
+      borderRadius: "5px",
+      backgroundColor: "#f9f9f9",
+      padding: "20px",
+      height: '500px', // Fixed height for the box itself
+      height: "58vh", // Maximum height for the box
+      display: "flex",
+      flexDirection: "column", // Ensures proper layout for scrolling
+    },
+    subheading: {
+      textAlign: "center",
+      fontWeight: "bold",
+      marginBottom: "10px",
+    },
+    scrollableContent: {
+      flex: 1, // Ensures the scrollable area fills the available space
+      overflowY: "auto", // Enables vertical scrolling
+      padding: "10px",
+      border: "1px solid #ddd",
+      borderRadius: "5px",
+      backgroundColor: "#fff",
+    },
+    submissionBox: {
+      marginBottom: "10px",
+      padding: "10px",
+      backgroundColor: "#fff",
+      borderRadius: "5px",
+      boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+    },
+    toggleHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      cursor: "pointer",
+      padding: "10px",
+      borderBottom: "1px solid #ddd",
+    },
+    toggleSymbol: {
+      fontSize: "20px",
+      fontWeight: "bold",
+    },
+    questionsList: {
+      listStyleType: "none",
+      paddingLeft: "10px",
+      marginTop: "10px",
+    },
+    questionItem: {
+      marginBottom: "10px",
+    },
+  };
 
-export default History;
+  export default History;

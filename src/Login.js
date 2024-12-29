@@ -65,18 +65,19 @@ const Login = () => {
   const styles = {
     sec: {
       display: "flex",
-    //   background: "url('/6213932.jpg') no-repeat center center/cover",
-    flexDirection: 'column',
-    justifyContent: 'center',
+      flexDirection: 'column',
+      justifyContent: 'space-between', // Ensures content and footer are spaced correctly
+      minHeight: '100vh', // Ensures the container takes the full height of the screen
     },
     sectionBgOverlay: {
       width: "100%",
-      height: "64vh",
+      flex: 1, // Make this flexible so it takes remaining space
       backgroundColor: "rgba(239, 227, 227, 0.5)",
       display: "flex",
-      justifyContent:'space-evenly',
+      justifyContent: 'space-evenly',
       alignItems: "center",
       color: "#2c3e50",
+      paddingBottom: "20px", // Adds gap between image and form
     },
     formBox: {
       position: "relative",
@@ -91,6 +92,7 @@ const Login = () => {
       justifyContent: "center",
       alignItems: "center",
       padding: "20px",
+      marginTop: "20px", // Adds margin at the top of the form
     },
     inputBox: {
       position: "relative",
@@ -156,6 +158,9 @@ const Login = () => {
     <div style={styles.sec}>
       <Lheader />
       <div style={styles.sectionBgOverlay}>
+      <div>
+        <img src="/assets/img/quiz image.png" alt="img" style={{ width:'140%'}} />
+      </div>
         <div style={styles.formBox}>
           <form onSubmit={handleSubmit}>
           <h3>{isSignup ? "Register" : "Login"}</h3>
@@ -223,9 +228,7 @@ const Login = () => {
           </form>
         </div>
         <div style={{height:'100%',width:'2px',backgroundColor:'black'}}></div>
-      <div>
-        <img src="/assets/img/quiz image.png" alt="img" style={{ width:'140%'}} />
-      </div>
+      
       </div>
       <Footer />
       </div>
