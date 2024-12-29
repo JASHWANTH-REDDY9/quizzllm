@@ -265,6 +265,7 @@ const { exec } = require("child_process");
 const multer = require("multer");
 const path = require('path');
 const fs = require('fs');
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 
 const app = express();
@@ -280,7 +281,7 @@ const upload = multer({ dest: "uploads/" });
 
 // Connect to MongoDB
 mongoose
-  .connect("mongodb+srv://Indra:indra@cluster0.2b7kvoh.mongodb.net/QuizLLM?retryWrites=true&w=majority&appName=Cluster0", {
+  .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
